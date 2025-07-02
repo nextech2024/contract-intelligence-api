@@ -1,0 +1,27 @@
+
+---
+
+### ✅ 2. `.gitignore` File
+
+Create a `.gitignore` file and paste this:
+
+```gitignore
+# Byte-compiled files
+__pycache__/
+*.py[cod]
+
+# Environment folders
+venv/
+env/
+ENV/
+.mypy_cache/
+.pytest_cache/
+
+# System files
+.DS_Store
+Thumbs.db
+
+# EFS mounts or AWS secrets
+*.pem
+*.key
+*.aws
