@@ -3,25 +3,38 @@
 from mangum import Mangum
 from fastapi import FastAPI
 from pydantic import BaseModel
-from agents import ContractReaderAgent, RiskCheckerAgent, SummaryAgent, JurisdictionAgent,  ObligationAgent, ClauseCategorizerAgent
+from agents import (
+    ContractReaderAgent,
+    RiskCheckerAgent,
+    SummaryAgent,
+    JurisdictionAgent,
+    ObligationAgent,
+    ClauseCategorizerAgent,
+    NegotiationAdvisorAgent,
+    MissingClauseDetectorAgent,
+    RedFlagAgent,
+    ContractScoringAgent,
+    AmendmentRecommenderAgent
+)
 
 # Create FastAPI app
 app = FastAPI(title="Multi-AI Agent Contract Intelligence API!")
 
-#define routes...
-
-#for AWS Lambda 
+# for AWS Lambda
 handler = Mangum(app)
 
-# Create our 3 agents
+# Create all 11 agents
 reader_agent = ContractReaderAgent()
 risk_agent = RiskCheckerAgent()
 summary_agent = SummaryAgent()
 jurisdiction_agent = JurisdictionAgent()
 obligation_agent = ObligationAgent()
 clause_agent = ClauseCategorizerAgent()
-
-
+negotiation_agent = NegotiationAdvisorAgent()
+missing_clause_agent = MissingClauseDetectorAgent()
+red_flag_agent = RedFlagAgent()
+score_agent = ContractScoringAgent()
+amendment_agent = AmendmentRecommenderAgent()
 
 # Data model for contract input
 class ContractInput(BaseModel):
@@ -34,7 +47,7 @@ def home():
 
 @app.post("/analyze-contract")
 def analyze_contract(contract: ContractInput):
-    """Analyze contract with all 3 agents"""
+    """Analyze contract with all 11 agents"""
     
     # Step 1: Contract Reader analyzes first
     reader_result = reader_agent.analyze(contract.contract_text)
@@ -58,6 +71,20 @@ def analyze_contract(contract: ContractInput):
     # Step 6: Clause Categorizer Agent identifies clause types
     clause_result = clause_agent.analyze(contract.contract_text)
 
+    # Step 7: Negotiation Advice
+    negotiation_result = negotiation_agent.analyze(contract.contract_text)
+
+    # Step 8: Missing Clause Detector
+    missing_result = missing_clause_agent.analyze(contract.contract_text)
+
+    # Step 9: Red Flag Detection
+    red_flag_result = red_flag_agent.analyze(contract.contract_text)
+
+    # Step 10: Contract Scoring
+    score_result = score_agent.analyze(contract.contract_text)
+
+    # Step 11: Amendment Recommendations
+    amendment_result = amendment_agent.analyze(contract.contract_text)
 
     # Return all results
     return {
@@ -67,7 +94,12 @@ def analyze_contract(contract: ContractInput):
         "summary": summary_result,
         "jurisdiction": jurisdiction_result,
         "obligations": obligation_result,
-        "clauses": clause_result
+        "clauses": clause_result,
+        "negotiation_advice": negotiation_result,
+        "missing_clauses": missing_result,
+        "red_flags": red_flag_result,
+        "contract_score": score_result,
+        "amendments": amendment_result
     }
 
 @app.get("/agents")
@@ -77,7 +109,15 @@ def list_agents():
         "agents": [
             {"name": "Contract Reader", "job": "Extract basic info"},
             {"name": "Risk Checker", "job": "Find risky parts"},
-            {"name": "Summary Agent", "job": "Create summary"}
+            {"name": "Summary Agent", "job": "Create summary"},
+            {"name": "Jurisdiction Checker", "job": "Identify governing law clauses"},
+            {"name": "Obligation Extractor", "job": "List responsibilities"},
+            {"name": "Clause Categorizer", "job": "Group clauses by type"},
+            {"name": "Negotiation Advisor", "job": "Suggest what to negotiate"},
+            {"name": "Missing Clause Detector", "job": "Find missing standard clauses"},
+            {"name": "Red Flag Detector", "job": "Highlight hidden red flags"},
+            {"name": "Contract Scorer", "job": "Score contract quality"},
+            {"name": "Amendment Recommender", "job": "Suggest helpful revisions"}
         ]
     }
 
@@ -85,5 +125,3 @@ def list_agents():
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run(app, host="0.0.0.0", port=8000)
-
- 
